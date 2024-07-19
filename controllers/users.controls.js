@@ -1,11 +1,9 @@
-const { validationResult } = require("express-validator"); //? medile ware
-const User = require("../models/users.modele"); //? get users data from DB server
+const User = require("../models/users.modele");
 const httpStatus = require("../utils/http.status");
 const asyncWrapper = require("../middlewares/asyncWrapper");
 const ERROR = require("../utils/ERROR");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
-const generateJWTkoken = require('../utils/generateJWTtoken')
 
 const register = asyncWrapper(async (req, res, next) => {
   const { first_name, last_name, email, password } = req.body;
@@ -18,20 +16,14 @@ const register = asyncWrapper(async (req, res, next) => {
 
   //! password hashing
   const hashingPassword = await bcrypt.hash(password, 12);
-  const Registration = new User({
-    first_name,
-    last_name,
-    email,
-    password: hashingPassword, //! not returning in response
-  });
+  const Registration = new User({ first_name, last_name, email, password: hashingPassword}); //
   const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "1D"});
-  // const token = generateJWTkoken({email: Registration.email, id: Registration._id});
   Registration.token = token;
 
-  await Registration.save(); //? save data to Database
+  await Registration.save(); // save data to Database;
+  const { password: hashedPassword, ...userWithoutPassword } = Registration.toObject();
 
-
-  res.status(201).json({ code: 201, message: "User registered successfully", data: {user: Registration}  });
+  res.status(201).json({statusCode: 201, message: "User registered successfully", data: { user: userWithoutPassword }});
 });
 
 const login = asyncWrapper(async (req, res, next) => {
@@ -55,7 +47,6 @@ const login = asyncWrapper(async (req, res, next) => {
     res.json({ code: 200, message: httpStatus.OK, information: user });
   }
 });
-
 const getAllUsers = async (req, res) => {
   //? get all data
   const query = req.query;
@@ -65,7 +56,6 @@ const getAllUsers = async (req, res) => {
   const users = await User.find({}, { __v: false, password: false }).limit(limit).skip(skip);
   res.json({ code: 200, message: httpStatus.OK, users: users });
 };
-
 const getSingleUser = asyncWrapper(async (req, res, next) => {
   const user = await User.findById(req.params.userId).exec();
   if (!user) {
@@ -73,38 +63,21 @@ const getSingleUser = asyncWrapper(async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ code: 200, data: { user } });
+  const { password, ...userWithoutPassword } = user.toObject();
+  res.json({ code: 200, data: { user: userWithoutPassword } });
 });
-
-const addNewUser = async (req, res) => {
-  try {
-    const user = new User(req.body);
-    await user.save();
-    res.status(201).json({ code: httpStatus.OK, user });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ code: httpStatus.ERR, message: "Server Error" });
-  }
+const delUser = async (req, res) => {
+  const data = await User.deleteOne({ _id: req.params.userId });
+  res.status(200).json({ message: httpStatus.OK, data: null });
 };
-
-const chnageUser = async (req, res) => {
+const chanageUser = async (req, res) => {
   const userId = req.params.userId;
   try {
-    const changeUserInfo = await User.findByIdAndUpdate(
-      userId,
-      { $set: { ...req.body } },
-      { new: true }
-    );
+    const changeUserInfo = await User.findByIdAndUpdate(userId, { $set: { ...req.body } }, { new: true });
     res.status(200).json(changeUserInfo);
   } catch (err) {
     return res.status(500).json({ message: httpStatus.ERR });
   }
 };
 
-const delUser = async (req, res) => {
-  //? done;
-  const data = await User.deleteOne({ _id: req.params.userId });
-  res.status(200).json({ message: httpStatus.OK, data: null });
-};
-
-module.exports = { login, register, getAllUsers, getSingleUser, addNewUser, chnageUser, delUser };
+module.exports = { login, register, getAllUsers, getSingleUser, chanageUser, delUser };
