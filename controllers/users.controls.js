@@ -17,7 +17,7 @@ const register = asyncWrapper(async (req, res, next) => {
   //! password hashing
   const hashingPassword = await bcrypt.hash(password, 12);
   const Registration = new User({ first_name, last_name, email, password: hashingPassword});
-  const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "1D"});
+  const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
   Registration.token = token;
 
   await Registration.save(); // save data to Database;
@@ -42,8 +42,8 @@ const login = asyncWrapper(async (req, res, next) => {
 
   const matchPassword = await bcrypt.compare(password, user.password);
   if(email && matchPassword) {
-    //! login Successfully
-    const token = await jwt.sign({email: user.email, id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: "1D"});
+    //! login Successfully ###
+    const token = await jwt.sign({email: user.email, id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
     res.json({ code: 200, message: httpStatus.OK, information: user });
   }
 });
