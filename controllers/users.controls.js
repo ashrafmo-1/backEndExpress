@@ -9,14 +9,14 @@ const register = asyncWrapper(async (req, res, next) => {
   const { first_name, last_name, email, password } = req.body;
 
   const existsUser = await User.findOne({ email: email });
-  if (existsUser) {
     const error = ERROR.create("User already exists", 422, "email already exists");
+  if (existsUser) {
     return next(error);
   }
 
   //! password hashing
   const hashingPassword = await bcrypt.hash(password, 12);
-  const Registration = new User({ first_name, last_name, email, password: hashingPassword}); //
+  const Registration = new User({ first_name, last_name, email, password: hashingPassword});
   const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "1D"});
   Registration.token = token;
 
@@ -47,6 +47,7 @@ const login = asyncWrapper(async (req, res, next) => {
     res.json({ code: 200, message: httpStatus.OK, information: user });
   }
 });
+
 const getAllUsers = async (req, res) => {
   //? get all data
   const query = req.query;
@@ -56,6 +57,7 @@ const getAllUsers = async (req, res) => {
   const users = await User.find({}, { __v: false, password: false }).limit(limit).skip(skip);
   res.json({ code: 200, message: httpStatus.OK, users: users });
 };
+
 const getSingleUser = asyncWrapper(async (req, res, next) => {
   const user = await User.findById(req.params.userId).exec();
   if (!user) {
@@ -66,10 +68,12 @@ const getSingleUser = asyncWrapper(async (req, res, next) => {
   const { password, ...userWithoutPassword } = user.toObject();
   res.json({ code: 200, data: { user: userWithoutPassword } });
 });
+
 const delUser = async (req, res) => {
   const data = await User.deleteOne({ _id: req.params.userId });
   res.status(200).json({ message: httpStatus.OK, data: null });
 };
+
 const chanageUser = async (req, res) => {
   const userId = req.params.userId;
   try {

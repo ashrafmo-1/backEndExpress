@@ -1,4 +1,3 @@
-// go to mongoose introduction "quick start" <==
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
