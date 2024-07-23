@@ -20,7 +20,7 @@ const register = asyncWrapper(async (req, res, next) => {
   const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
   Registration.token = token;
 
-  await Registration.save(); // save data to Database;
+  await Registration.save(); //? save data to Database;
   const { password: hashedPassword, ...userWithoutPassword } = Registration.toObject();
 
   res.status(201).json({statusCode: 201, message: "User registered successfully", data: { user: userWithoutPassword }});
@@ -46,6 +46,7 @@ const login = asyncWrapper(async (req, res, next) => {
     const token = await jwt.sign({email: user.email, id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
     res.json({ code: 200, message: httpStatus.OK, information: user });
   }
+
 });
 
 const getAllUsers = async (req, res) => {

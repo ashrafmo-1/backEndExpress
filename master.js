@@ -7,7 +7,7 @@ const url = process.env.MONGO_DB_URL;
 // all routes
 const usersRouter = require("./routes/users.route");
 const productsRouter = require("./routes/products.route");
-
+const categoryRouter = require("./routes/category.routes");
 
 mongoose.connect(url).then(() => {
   console.log("Connect success for DB");
@@ -17,6 +17,7 @@ app.use(cors())
 app.use(express.json());
 app.use("/api/users", usersRouter);
 app.use("/api/products", productsRouter);
+app.use("/api/categorys", categoryRouter);
 
 //! not implemented yet;
 app.all('*', (req, res) => {
