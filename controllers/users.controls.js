@@ -20,14 +20,13 @@ const register = asyncWrapper(async (req, res, next) => {
   const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
   Registration.token = token;
 
-  await Registration.save(); //? save data to Database;
+  await Registration.save(); // save data to Database;
   const { password: hashedPassword, ...userWithoutPassword } = Registration.toObject();
 
   res.status(201).json({statusCode: 201, message: "User registered successfully", data: { user: userWithoutPassword }});
 });
 
 const login = asyncWrapper(async (req, res, next) => {
-
   const { email, password } = req.body;
   if(!email && !password) {
     const error = ERROR.create("Please provide email and password", 422, "email and password are required");
@@ -46,7 +45,6 @@ const login = asyncWrapper(async (req, res, next) => {
     const token = await jwt.sign({email: user.email, id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
     res.json({ code: 200, message: httpStatus.OK, information: user });
   }
-
 });
 
 const getAllUsers = async (req, res) => {
@@ -71,7 +69,7 @@ const getSingleUser = asyncWrapper(async (req, res, next) => {
 });
 
 const delUser = async (req, res) => {
-  const data = await User.deleteOne({ _id: req.params.userId });
+  const data = await User.deleteOne({ _id: req.params.id });
   res.status(200).json({ message: httpStatus.OK, data: null });
 };
 

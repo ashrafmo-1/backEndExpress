@@ -50,4 +50,36 @@ const updateProduct = asyncWrapper(async (req, res) => {
     res.status(200).json(pathProducts);
 })
 
-module.exports = {addNewProduct, showSingleUser, showAllProducts, removeProduct, updateProduct};
+const numOfProductsByCategory = asyncWrapper(async (req, res) => {
+    const {category} = req.body;
+    try{
+        const products = await Product.find({category});
+        if(products.length === 0) {
+            return res.status(404).json({statusCode: 404, message: `No products found for ${category}`});
+        }
+        else {
+            res.status(200).json({message: `Number of products for ${category} retrieved successfully`, data: {category, numOfProducts: products.length}});
+        }
+    }
+    catch(err) {
+        res.status(500).json({ message: 'Internal server error in retrieving products number by category'});
+    }
+});
+
+const showAllProductsByCategory = asyncWrapper(async (req, res) => {
+    const {category} = req.body;
+    try{
+        const products = await Product.find({category});
+        if(products.length === 0) {
+            return res.status(404).json({statusCode: 404, message: `No products found for ${category}`});
+        }
+        else {
+            res.status(200).json({message: `Products for ${category} retrieved successfully`, data: {category, products}});
+        }
+    }
+    catch(err) {
+        res.status(500).json({message: 'Internal server error in retrieving products by category'});
+    }
+});
+
+module.exports = {addNewProduct, showSingleUser, showAllProducts, removeProduct, updateProduct, numOfProductsByCategory, showAllProductsByCategory};

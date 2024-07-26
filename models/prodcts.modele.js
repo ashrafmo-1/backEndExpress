@@ -5,7 +5,11 @@ const ProductSchema = new mongoose.Schema({
     quantity: { type: Number, required: true },
     count: { type: Number, required: true },
     in_stock: { type: Boolean, required: true },
-    category: { type: String, required: true },
+    category: { 
+        type: String, 
+        required: true,
+        enum: ["Electronics", "Fashion", "Home", "Beauty", "Sports", "Books", "Personal Care"],
+    },
     slug: { type: String, required: true },
 });
 

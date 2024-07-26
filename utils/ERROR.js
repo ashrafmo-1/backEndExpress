@@ -9,6 +9,6 @@ class ERROR extends Error {
     this.statusText = stetusText;
     return this;
   }
-}
+};
 
 module.exports = new ERROR();
