@@ -6,24 +6,29 @@ const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 
 const register = asyncWrapper(async (req, res, next) => {
-  const { first_name, last_name, email, password } = req.body;
+  const { first_name, last_name, email, password, confirm_password } = req.body;
+
+  if (password !== confirm_password) {
+    const error = ERROR.create("Passwords do not match", 422, "password mismatch");
+    return next(error);
+  }
 
   const existsUser = await User.findOne({ email: email });
-    const error = ERROR.create("User already exists", 422, "email already exists");
   if (existsUser) {
+    const error = ERROR.create("User already exists", 422, "email already exists");
     return next(error);
   }
 
   //! password hashing
   const hashingPassword = await bcrypt.hash(password, 12);
-  const Registration = new User({ first_name, last_name, email, password: hashingPassword});
-  const token = await jwt.sign({email: Registration.email, id: Registration._id}, process.env.JWT_SECRET_KEY, {expiresIn: "100D"});
+  const Registration = new User({ first_name, last_name, email, password: hashingPassword });
+  const token = await jwt.sign({ email: Registration.email, id: Registration._id }, process.env.JWT_SECRET_KEY, { expiresIn: "100D" });
   Registration.token = token;
 
   await Registration.save(); // save data to Database;
   const { password: hashedPassword, ...userWithoutPassword } = Registration.toObject();
 
-  res.status(201).json({statusCode: 201, message: "User registered successfully", data: { user: userWithoutPassword }});
+  res.status(201).json({ statusCode: 201, message: "User registered successfully", data: { user: userWithoutPassword } });
 });
 
 const login = asyncWrapper(async (req, res, next) => {
